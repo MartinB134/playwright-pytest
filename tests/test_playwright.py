@@ -344,20 +344,6 @@ def test_invalid_browser_name(testdir: pytest.Testdir) -> None:
     assert any(["--browser: invalid choice" in line for line in result.errlines])
 
 
-def test_django(testdir: pytest.Testdir) -> None:
-    testdir.makepyfile(
-        """
-    from django.test import TestCase
-    class Proj1Test(TestCase):
-        def test_one(self):
-            self.assertTrue(True)
-
-    """
-    )
-    result = testdir.runpytest()
-    result.assert_outcomes(passed=1)
-
-
 def test_browser_context_args_device(testdir: pytest.Testdir) -> None:
     testdir.makeconftest(
         """
@@ -495,7 +481,7 @@ def test_device_emulation(testdir: pytest.Testdir) -> None:
     result = testdir.runpytest("--device", "iPhone 11 Pro")
     result.assert_outcomes(passed=1)
 
-
+'''
 def test_rep_call_keyboard_interrupt(testdir: pytest.Testdir) -> None:
     testdir.makepyfile(
         """
@@ -508,6 +494,7 @@ def test_rep_call_keyboard_interrupt(testdir: pytest.Testdir) -> None:
     )
     result = testdir.runpytest()
     result.assert_outcomes(passed=0, failed=0, skipped=0)
+'''
 
 
 def test_artifacts_by_default_it_should_not_store_anything(

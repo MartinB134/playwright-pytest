@@ -1,0 +1,13 @@
+{
+  "products": {
+    "Snickers": {
+      "product_price": 0.0
+    },
+    "Skittles": {
+      "product_price": 0.0
+    }
+  },
+  "basket": {
+    "sum_value": 0.0
+  }
+}
