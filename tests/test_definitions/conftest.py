@@ -14,19 +14,13 @@
 
 
 ####
-#Reporting - Allure # Todo: Remove after allure test
+#Reporting - Allure
 #################
 
-import pytest
-import mock
 from contextlib import contextmanager
 import allure_commons
 from allure_commons.reporter import AllureReporter as AllureReport
 from allure_commons.logger import AllureFileLogger
-#from .steps import * # noqa F401 F403
-
-####### # Todo: Remove after allure test
-
 
 import sys
 import os
@@ -39,13 +33,13 @@ from pytest_html import extras
 from pytest_playwright.pytest_playwright import page, pytest_configure
 
 from pages.Amazon import Amazon
+import mock
 
 from pytest_bdd import parsers, given
-import warnings
-
 
 TESTDATA_PATH = "tests/assets/testdata.json"
 pytest.Amazon_URL = "https://www.amazon.com"
+
 # The testdir fixture which we use to perform unit tests will set the home directory
 # To a temporary directory of the created test. This would result that the browsers will
 # be re-downloaded each time. By setting the pw browser path directory we can prevent that.
@@ -56,6 +50,8 @@ elif sys.platform == "linux":
 elif sys.platform == "win32":
     user_profile = os.environ["USERPROFILE"]
     playwright_browser_path = f"{user_profile}\\AppData\\Local\\ms-playwright"
+else:
+    playwright_browser_path = f"No browser found"
 
 os.environ["PLAYWRIGHT_BROWSERS_PATH"] = playwright_browser_path
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "tests.assets.django.settings")
@@ -125,7 +121,7 @@ def pytest_bdd_before_scenario(request):
 
 
 def pytest_bdd_after_step(request, step):
-    print(f"Calling{request.addfinalizer()} Step \n '{step}' \n")
+    print(f"Calling{request} Step \n '{step}' \n")
 
 
 def pytest_bdd_step_error(step, step_func, exception):
@@ -158,7 +154,8 @@ def change_zipcode_us(zipcode, amazon=return_amazon_page):
     if amazon.page.locator("a:has-text('Departments')").is_visible():
         # Reset Page
         amazon.page.locator("text=Departments").first.click()
-    amazon.page.locator("div[role=alertdialog] input[data-action-type=\"SELECT_LOCATION\"]").click()
+    #amazon.page.locator("div[role=alertdialog] input[data-action-type=\"SELECT_LOCATION\"]").click()
+    amazon.page.locator('//*[contains(@id,"nav-pack")]').click()
     amazon.page.locator("[aria-label=\"oder geben Sie eine US-Postleitzahl an\"]").click()
     # Fill [aria-label="oder geben Sie eine US-Postleitzahl an"]
     amazon.page.locator("[aria-label=\"oder geben Sie eine US-Postleitzahl an\"]").fill(zipcode)
@@ -245,7 +242,8 @@ def pytest_runtest_makereport(item, call):
 @pytest.fixture(scope='module')
 def module_scope_fixture_with_finalizer(request):
     def module_finalizer_fixture():
-        module_scope_step()
+        #my_module_scope_step()
+        pass
     request.addfinalizer(module_finalizer_fixture)
 
 

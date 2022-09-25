@@ -1,7 +1,7 @@
 ###### Szenario Amazon
 import allure
 import pytest
-from pytest_bdd import given, when, then, parsers, scenario, reporting
+from pytest_bdd import given, when, then, parsers, scenario
 
 # Todo: remove after alluretest
 from functools import partial
@@ -88,7 +88,7 @@ def seek_low_priced_product(products, page, amazon, write_testdata_to_current_pa
         print(f"Amazon. Get_Var('products'): {amazon.get_var('products')}")
         locator_cheapest_price.click()
         amazon.add_product_to_basket(product)
-        amazon.add_price_to_basket_sum(product_price)
+        # amazon.add_price_to_basket_sum(product_price)
 
 
 @when(parsers.parse('all products are added to the basket'))

@@ -1,5 +1,4 @@
 # POM model to keep selectors maintainable
-import json
 
 from playwright.sync_api import Page, expect
 import re
@@ -40,6 +39,7 @@ class Amazon:
         self.product_price_options = self.page.locator("//*[contains(@id,'variation_')]/ul")  # If this is visible, get cheapest
         self.product_price_options_inner = self.page.locator("//*[contains(@id,'variation_')]/ul/li//span")  # If this is visible, get cheapest
         self.product_price_single = self.page.locator("//*[@id= 'newAccordionRow']//*[contains(@class, 'a-price')][1]")
+        self.product_price = self.page.locator("(//*[contains(@class, 'text-price')]/span)[1]")
         self.product_price_alternative = self.page.locator("(//h5//*[contains(@class, 'text-price')]/span)[1]")
         self.buy_button_alt = self.page.locator(
             "//*[@id= 'mbc']//span[contains(@class, 'primary')]"
@@ -114,10 +114,11 @@ class Amazon:
                               "or contains(text(), 'Einmalkauf')]]").click()
             product_price = self.product_price_alternative.inner_text()[1:]
             self.page.locator("form input#add-to-cart-button").click()
-            #self.add_price_to_basket_sum(product_price)
+            self.add_price_to_basket_sum(product_price)
         else:
-            # product_price = self.page.locator("#corePrice_feature_div .a-price >> nth=1").inner_text() not concise
+            product_price = self.product_price.inner_text()[1:]
             self.page.locator("form input#add-to-cart-button").click()
+            self.add_price_to_basket_sum(product_price)
 
         self.page.wait_for_url(f"{pytest.Amazon_URL}/*")
         # Click text=Proceed to checkout Zur Kasse gehen Zur Kasse >> input[name="proceedToCheckout"]
@@ -166,12 +167,9 @@ class Amazon:
         self.save_var(new_data)
         return new_data
 
-    def add_price_to_basket_sum(self, price: (float | str)):
+    def add_price_to_basket_sum(self, price):
         self.testdata["basket"]["sum_value"] += float(str(price).replace(",", "."))
         print(f"Value: {price} added to basket: {self.testdata['basket']['sum_value']}")
-        # self.change_nested_json_values(json.dumps(self.testdata),
-        #                               ["basket", "sum_value"],
-        #                               new_basket_price)
 
     def selector(self, amazon_selector="searchbar"):
         if self.__getattribute__(amazon_selector):

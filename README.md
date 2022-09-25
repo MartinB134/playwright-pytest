@@ -16,6 +16,7 @@ Write end-to-end tests for your web apps with [Playwright](https://github.com/mi
    ``.\pytest_venv\Scripts\activate``
 3. Install all dependencies for execution
    - ``pip install -r requirements.txt``
+4. ``playwright install`` (to initialize the playwright browser setup)
 4. Test with 
    -``pytest``
 5. This environment is configured to run headed, with a slight delay, ignoring the second playwright test

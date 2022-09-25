@@ -38,6 +38,9 @@ MANIFEST
 *.manifest
 *.spec
 
+# Pycharm files
+.idea/
+
 # Installer logs
 pip-log.txt
 pip-delete-this-directory.txt
@@ -110,6 +113,7 @@ celerybeat.pid
 .env
 .venv
 env/
+new_venv/
 venv/
 ENV/
 env.bak/
