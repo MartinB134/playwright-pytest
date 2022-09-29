@@ -67,7 +67,7 @@ class Amazon:
         self.page.wait_for_url(f"{pytest.Amazon_URL}/s?k={product}*")
         # Wait for the product text and prices to e visible
         self.product_texts.first.wait_for(timeout=6000)
-        self.first_deliverable_product_price.wait_for(timeout=2000)
+        self.first_deliverable_product_price.wait_for()
         # self.page.wait_for_timeout(2000)
         while not self.first_deliverable_product_price.is_visible():
             self.next_button.click()

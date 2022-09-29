@@ -14,7 +14,7 @@
 
 
 ####
-#Reporting - Allure
+# Reporting - Allure
 #################
 
 from contextlib import contextmanager
@@ -90,12 +90,10 @@ def write_price_to_products(price="0", product="empty"):
     if product == "empty":
         return pytest.initial_testdata
     test_data_new = pytest.initial_testdata
-    #file = open(os.path.abspath(TESTDATA_PATH), 'w')
     new_data = Helpers.change_nested_json_values(test_data_new,
                                                  ["products", product, "product_price"],
                                                  price)
     print(f"Price '{price}' added to product '{product}'")
-    #file.write(new_data)
 
 
 @pytest.fixture
@@ -190,9 +188,6 @@ def override_nameerror_warningmessage():
 '''
 
 
- # Todo: Remove after allure test
-
-
 @contextmanager
 def fake_logger(path, logger):
     blocked_plugins = []
@@ -217,11 +212,12 @@ class AlluredTestdir(object):
     def run_with_allure(self):
         logger = AllureFileLogger(self.testdir.tmpdir.strpath)
         with fake_logger("allure_pytest_bdd.plugin.AllureFileLogger", logger):
-            #self.testdir.runpytest("-s", "-v", "--alluredir", self.testdir.tmpdir)
+            # self.testdir.runpytest("-s", "-v", "--alluredir", self.testdir.tmpdir)
             self.testdir.runpytest("-s", "-v")
             # print(a.stdout.lines)
             # print(a.stderr.lines)
             self.allure_report = AllureReport()
+
 
 # This will append an url to the html report
 @pytest.hookimpl(hookwrapper=True)
@@ -239,16 +235,18 @@ def pytest_runtest_makereport(item, call):
             extra.append(pytest_html.extras.html("<div>Additional HTML</div>"))
         report.extra = extra
 
+
 @pytest.fixture(scope='module')
 def module_scope_fixture_with_finalizer(request):
     def module_finalizer_fixture():
-        #my_module_scope_step()
+        # my_module_scope_step()
         pass
     request.addfinalizer(module_finalizer_fixture)
 
 
 def test_extra(extra):
     extra.append(extras.text("some string MB. Added in conftest"))
+
 '''
 @pytest.fixture
 def allured_testdir(testdir, request):

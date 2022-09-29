@@ -63,6 +63,8 @@ def seek_low_priced_product(products, page, amazon, write_testdata_to_current_pa
         print(f"From Products: {products} \n"
               f"Evaluating Product: '{product}'\n"
               f"match: {match}")
+        page.wait_for_url(f"{pytest.Amazon_URL}*")
+        page.wait_for_timeout(500)
         page.wait_for_selector(".nav-search-field input")
         page.is_visible(".nav-search-field input")
         # Search for specific product

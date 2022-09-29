@@ -6,11 +6,6 @@ Feature: Checking basic features of Amazon
   - check if the user gets redirected to the registration page
     - for the conditions: 1. using the checkout button
                           2. without an account registered
-
-  Searching for two example products,
-  getting cheapest product,
-  checking basket price and
-  validating registration page
   Scenario: Check the amazon basket for multiple products
     Given A browser is opened at page amazon
     And Zipcode is set the US address 22161

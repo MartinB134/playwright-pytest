@@ -112,11 +112,10 @@ celerybeat.pid
 # Environments
 .env
 .venv
-env/
-new_venv/
+*_venv/
 venv/
 ENV/
-env.bak/
+env.bak/deactivate
 venv.bak/
 
 # Spyder project settings
