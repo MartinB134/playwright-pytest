@@ -55,35 +55,24 @@ def test_example_is_working_bdd(amazon, page, products: [0.0]):
 @allure.severity(allure.severity_level.MINOR)
 @given(parsers.parse('I find and add the cheapest product to the basket'))
 def seek_low_priced_product(products, page, amazon, write_testdata_to_current_page_class, helpers):
-    print(f"What is page? :  {page}")
     if amazon.reject_cookies.is_visible():
         amazon.reject_cookies.click()
     for i, product in enumerate(products):  # could also be parametrized in fixture
-        match = amazon.selector("searchbar")
-        print(f"From Products: {products} \n"
-              f"Evaluating Product: '{product}'\n"
-              f"match: {match}")
+        searchbar = amazon.selector("searchbar")
         page.wait_for_url(f"{pytest.Amazon_URL}*")
-        page.wait_for_timeout(500)
-        page.wait_for_selector(".nav-search-field input")
-        page.is_visible(".nav-search-field input")
+        page.wait_for_selector(searchbar)
+        page.is_visible(searchbar)
         # Search for specific product
-        page.fill(".nav-search-field input", str(product))
+        page.fill(searchbar, str(product))
         # Press Enter and wait page to load completely
-        page.locator("input[name=\"field-keywords\"]").press("Enter")
+        page.locator(searchbar).press("Enter")
         page.wait_for_url(f"{pytest.Amazon_URL}/s?k=*{product}*")
         amazon.sort_for_product_price_asc(product)
         locator_cheapest_price, product_price = amazon.choose_best_priced_product_from_results(product)
         print(f"product_price: '{product_price}' \n"
               f"Pytest database: {pytest.initial_testdata}\n"
               f"Amazon Testdata:\n {amazon.testdata}")
-        # write_price_to_products(product_price, product)
-        # new_data = amazon.change_nested_json_values(amazon.testdata,
-        #                                             ["products", product, "product_price"],
-        #                                             product_price)
-        # amazon.save_var(new_data)
         amazon.update_single_product_price(product, product_price)
-        # amazon.sum_basket(product_price)
         var = amazon.basket()
         var2 = var['sum_value']
         print(f"Amazon.basket(): {var}")
@@ -96,7 +85,7 @@ def seek_low_priced_product(products, page, amazon, write_testdata_to_current_pa
 @when(parsers.parse('all products are added to the basket'))
 def check_mini_basket(page, amazon):
     minibasket_price = amazon.page.locator("//*[contains(@class, 'subtotal-value')]").inner_text()
-    products = amazon.products()
+    products = amazon.products
     basket = amazon.basket()
     print(f"Amazon products: {products} \n "
           f"Basket: {basket} \n "

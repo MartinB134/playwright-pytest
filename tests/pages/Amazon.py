@@ -5,13 +5,12 @@ import re
 import pytest
 from functools import reduce
 from operator import getitem
-
+import time
 
 class Amazon:
     def __init__(self, page: Page):
         self.page = page
-        # Data from TESTDATA_PATH = "tests/assets/testdata.json"
-        self.testdata = {}  # Permanent Storage in testdata.json
+        self.testdata = {}  # Permanent Storage in testdata.json will be filled in confest
         self.searchbar = self.page.locator(".nav-search-field input")
         self.reject_cookies = self.page.locator("//a[contains(@id, 'rejectall')]")
         self.sort_select_toggle = self.page.locator("//select[contains(@id, 'result-sort')]/../span")
@@ -20,15 +19,19 @@ class Amazon:
         self.first_deliverable_product_text = self.page.locator(
             "((//*[contains(@aria-label, 'Lieferung') or contains(@aria-label, 'Get it')])[1]//ancestor::*[@data-asin]//h2)[1]")
         self.first_deliverable_product_price = self.page.locator(
-            "(//*[contains(@aria-label, 'Lieferung') or contains(@aria-label, 'Get it')]"
-            "//ancestor::*[@data-asin]//*[contains(@class, 'price-whole')])[1]")
+            "(//*[contains(@aria-label, 'Lieferung') "
+            "or contains(@aria-label, 'Get it') "
+            "or contains(@aria-label, 'delivery')]//ancestor::*[@data-asin]//*[contains(@class, 'price-whole')])[1]")
         self.product_texts = self.page.locator(
             "(//*[contains(@aria-label, '')])[1]//ancestor::*[@data-asin]//h2")
         self.deliverable_product_prices = self.page.locator(
-            "//*[contains(@aria-label, 'Get it') or contains(@aria-label, 'Lieferung')]"
+            "//*[contains(@aria-label, 'Get it')"
+            "or contains(@aria-label, 'delivery')"
+            "or contains(@aria-label, 'Lieferung')]"
             "//ancestor::*[@data-asin]//*[contains(@class, 'price-whole')]")
         self.deliverable_product_price_fractions = self.page.locator(
-            "//*[contains(@aria-label, 'Lieferung') or contains(@aria-label, 'Get it')]"
+            "//*[contains(@aria-label, 'Lieferung') or contains(@aria-label, 'Get it') "
+            "or contains(@aria-label, 'delivery')]"
             "//ancestor::*[@data-asin]//*[contains(@class, 'price-fraction')]")
         self.next_button = self.page.locator("//*[contains(@class, 'pagination')]//a[contains(@class, 'next')]")
         self.add_to_basket_impossible = self.page.locator("#exportsUndeliverable-cart-announce")
@@ -39,7 +42,7 @@ class Amazon:
         self.product_price_options = self.page.locator("//*[contains(@id,'variation_')]/ul")  # If this is visible, get cheapest
         self.product_price_options_inner = self.page.locator("//*[contains(@id,'variation_')]/ul/li//span")  # If this is visible, get cheapest
         self.product_price_single = self.page.locator("//*[@id= 'newAccordionRow']//*[contains(@class, 'a-price')][1]")
-        self.product_price = self.page.locator("(//*[contains(@class, 'text-price')]/span)[1]")
+        self.product_price = self.page.locator("(//span[contains(@class, 'price')]//*[contains(@class, 'a-offscreen')])[1]")
         self.product_price_alternative = self.page.locator("(//h5//*[contains(@class, 'text-price')]/span)[1]")
         self.buy_button_alt = self.page.locator(
             "//*[@id= 'mbc']//span[contains(@class, 'primary')]"
@@ -82,32 +85,35 @@ class Amazon:
         return locator_cheapest_product, lowest_price
 
     def return_cheapest_price_from_product_overview(self):
-        self.page.wait_for_timeout(1000)
+        # self.page.wait_for_timeout(1000)
+        self.deliverable_product_prices.last.wait_for()
         price_wholes = self.deliverable_product_prices.all_inner_texts()  # e.g. ['10\n,', '8\n,', '15\n,']
         price_fractions = self.deliverable_product_price_fractions.all_inner_texts()  # e.g. ['99', '49', '33']
         price_wholes = [price[:-2] for price in price_wholes]  # cut off the last three unnecessary digits
         final_prices = []
+
         for index, item in enumerate(price_fractions):
             try:
                 final_prices.append(price_wholes[index] + "." + item)
             except IndexError as error_msg:
                 print(f"Number of fractions '{len(price_fractions)}' does not match number of whole prices: "
                       f"'{price_wholes.__len__()}'. Errormsg:{error_msg}")
+
         final_prices_float = [float(price) for price in final_prices]
         final_prices_float.sort()
         print(f"Final prices: {final_prices_float}")
-        lowest_price = str(final_prices_float[0])  # for germany .replace(".", ",")
+        lowest_price = str(final_prices_float[0])  # for germany convert to dot notation .replace(".", ",")
         print(f"Lowest Price found: {lowest_price}")
         return lowest_price
 
     def add_product_to_basket(self, product):
-        # Click Add to Cart button
-        # Click input:has-text("In den Einkaufswagen")
         self.page.wait_for_url(f"{pytest.Amazon_URL}/*")
+
         if self.add_to_basket_impossible.is_visible():
             product_price = self.product_price_alternative.inner_text()
             self.buy_button_alt.click()
             self.add_price_to_basket_sum(product_price)
+            print(f"Added price '{product_price}' to basket")
         if self.page.locator("//a[.//span[contains(text(), 'One-time purchase') "
                              "or contains(text(), 'Einmalkauf')]]").is_visible():
             self.page.locator("//a[.//span[contains(text(), 'One-time purchase') "
@@ -115,10 +121,12 @@ class Amazon:
             product_price = self.product_price_alternative.inner_text()[1:]
             self.page.locator("form input#add-to-cart-button").click()
             self.add_price_to_basket_sum(product_price)
+            print(f"Added price_alternative '{product_price}' to basket")
         else:
             product_price = self.product_price.inner_text()[1:]
             self.page.locator("form input#add-to-cart-button").click()
             self.add_price_to_basket_sum(product_price)
+            print(f"Added product_price: '{product_price}' to basket")
 
         self.page.wait_for_url(f"{pytest.Amazon_URL}/*")
         # Click text=Proceed to checkout Zur Kasse gehen Zur Kasse >> input[name="proceedToCheckout"]
@@ -139,21 +147,26 @@ class Amazon:
         return self.testdata["basket"]
 
     def products(self):
+        self.change_nested_json_values()
         return self.testdata["products"]
 
-    def sum_basket(self, price):
+    def sum_basket(self, price) -> None:
+        """Update Testdata with new product price in session scope
+
+        @param price: new product price
+        """
         self.testdata["basket"]["sum_value"] += float(str(price).replace(",", "."))
 
-    '''
-    def products(testdata):
-        return testdata["products"]
-    '''
     def change_nested_json_values(self,
                                   json_dump: str = "testdata: {node: {key: value}}",
                                   key_list: list = None,
                                   new_value: str = "") -> str:
-        """Set item in nested dictionary
+        """
+        Set item in nested dictionary
 
+        @param json_dump: string in json format that nshould be traversed
+        @param key_list: list with specified values in json. Determines the path of keys.to the value:
+        @param new_value: new value that replaces old value
         :return: New Json with changed value at specified key path
         """
         reduce(getitem, key_list[:-1], json_dump)[key_list[-1]] = new_value
@@ -174,6 +187,7 @@ class Amazon:
     def selector(self, amazon_selector="searchbar"):
         if self.__getattribute__(amazon_selector):
             page_object = self.__getattribute__(amazon_selector)
+            print(f"Page_object:  {page_object}")
             match = re.search(r"selector='(.*)'", page_object.__repr__()).group(1)
         else:
             match = self.page.locator(amazon_selector)
