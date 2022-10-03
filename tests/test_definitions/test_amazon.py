@@ -44,6 +44,7 @@ def show_in_report(arg1, arg2):
 # Call other test with this
 # scenarios('test_amazon_basket.feature')
 
+
 @scenario('test_amazon_basket.feature', 'Check the amazon basket for multiple products')
 def test_example_is_working_bdd(amazon, page, products: [0.0]):
     single_price_sum = 0.0
@@ -51,6 +52,7 @@ def test_example_is_working_bdd(amazon, page, products: [0.0]):
     #    single_price_sum += int(products[product]["product_price"])
     page.locator(amazon.checkout_mini_cart_product_prices)
     assert single_price_sum == 0.0
+
 
 @allure.severity(allure.severity_level.MINOR)
 @given(parsers.parse('I find and add the cheapest product to the basket'))
@@ -60,8 +62,7 @@ def seek_low_priced_product(products, page, amazon, write_testdata_to_current_pa
     for i, product in enumerate(products):  # could also be parametrized in fixture
         searchbar = amazon.selector("searchbar")
         page.wait_for_url(f"{pytest.Amazon_URL}*")
-        page.wait_for_selector(searchbar)
-        page.is_visible(searchbar)
+        amazon.page.click(searchbar)
         # Search for specific product
         page.fill(searchbar, str(product))
         # Press Enter and wait page to load completely

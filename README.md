@@ -133,6 +133,8 @@ Install allure:
 > If there is a problem with a JAVA_HOME directory not found: run in the same terminal ``scoop bucket add extras``
 then ``scoop install find-java``. After you restart the commandline ``allure --version`` should return just a number.
 
+### Save an allure report
+`` pytest --alluredir=/relative_path/my_allure_results``
 
 ### Display allure output
 ``allure serve /path/to/allure_output_folder``
