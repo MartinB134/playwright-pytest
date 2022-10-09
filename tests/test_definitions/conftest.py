@@ -12,29 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-####
-# Reporting - Allure
-#################
-
-from contextlib import contextmanager
-import allure_commons
-from allure_commons.reporter import AllureReporter as AllureReport
-from allure_commons.logger import AllureFileLogger
-
 import sys
 import os
 import json
-from functools import reduce
-from operator import getitem
 import pytest
 from pytest_html import extras
-
-from pytest_playwright.pytest_playwright import page, pytest_configure
-
 from pages.Amazon import Amazon
-import mock
-
 from pytest_bdd import parsers, given
 
 TESTDATA_PATH = "tests/assets/testdata.json"
@@ -119,12 +102,12 @@ def pytest_bdd_before_scenario(request):
 
 
 def pytest_bdd_after_step(request, step):
-    print(f"Calling{request} Step \n '{step}' \n")
+    print(f"Calling Step \n '{step}'")
 
 
 def pytest_bdd_step_error(step, step_func, exception):
     print(f"=============== Custom Failure Report ============================/\n"
-          f"Step: '{step}' failed in function: '{step_func}'\n"
+          f"Step: '{step.name}' failed in function: '{step_func}'\n"
           f"Exception: '{exception}'")
 
 
@@ -139,8 +122,6 @@ def pytest_bdd_after_scenario(request, feature, scenario):
 @given(parsers.parse("A browser is opened at page amazon"), target_fixture="page")
 def return_amazon_page(page):
     page.goto(f"{pytest.Amazon_URL}")
-    # page.wait_for_url(f"{pytest.Amazon_URL}")
-    # Check preconditions
     return page
 
 
@@ -152,15 +133,17 @@ def change_zipcode_us(zipcode, amazon=return_amazon_page):
     if amazon.page.locator("a:has-text('Departments')").is_visible():
         # Reset Page
         amazon.page.locator("text=Departments").first.click()
-    #amazon.page.locator("div[role=alertdialog] input[data-action-type=\"SELECT_LOCATION\"]").click()
+    # Sometimes amazon starts at a different amazon home page
+    if not amazon.page.locator('//*[contains(@id,"nav-pack")]').is_visible():
+        amazon.page.goto(f"{pytest.Amazon_URL}")
     amazon.page.locator('//*[contains(@id,"nav-pack")]').click()
     amazon.page.locator("[aria-label=\"oder geben Sie eine US-Postleitzahl an\"]").click()
     # Fill [aria-label="oder geben Sie eine US-Postleitzahl an"]
     amazon.page.locator("[aria-label=\"oder geben Sie eine US-Postleitzahl an\"]").fill(zipcode)
-    amazon.page.locator("div[id='GLUXSpecifyLocationDiv'] .a-button-input").click()
-    # Click text=BestätigenBitte gültige Postleitzahl eingebenDiese Postleitzahl ist derzeit nich >> input[type="submit"]
-    # amazon.page.locator("text=BestätigenBitte gültige Postleitzahl eingebenDiese Postleitzahl ist derzeit nich >> input[type=\"submit\"]").click()
+    amazon.page.wait_for_timeout(100)
     # Click confirm button
+    amazon.page.locator("div[id='GLUXSpecifyLocationDiv'] .a-button-input").click()
+    # Click second confirm button
     amazon.page.locator(".a-popover-footer input").click()
 
 
@@ -168,57 +151,25 @@ def change_zipcode_us(zipcode, amazon=return_amazon_page):
 # Helper functions
 ####################
 class Helpers:
-    """Functions that are  globally accessible with "helpers." notation
     """
-    @staticmethod
-    def change_nested_json_values(json_dump: str = "testdata: {node: {key: value}}",
-                                  key_list: list = None,
-                                  new_value: str = "") -> str:
-        """Set item in nested dictionary
-
-        :return: New Json with changed value at specified key path
-        """
-        reduce(getitem, key_list[:-1], json_dump)[key_list[-1]] = new_value
-        return json_dump
+    Functions that are  globally accessible with "helpers." notation
+    """
+    def write_testdata_to_current_page_class(amazon):
+        file = open(os.path.abspath(TESTDATA_PATH), 'r')
+        testdata_json = json.loads(file.read())
+        pytest.initial_testdata = testdata_json
+        amazon.testdata = testdata_json
 
 
 ''' Replace every warning message you want to override
 def override_nameerror_warningmessage():
-    warnings.warn(NameError("Tests need to be debugged (Instead of 'NameError' as message)"))
+    warnings.warn(NameError("This message will be displayed instead of 'NameError' as message)"))
 '''
 
 
-@contextmanager
-def fake_logger(path, logger):
-    blocked_plugins = []
-    for name, plugin in allure_commons.plugin_manager.list_name_plugin():
-        allure_commons.plugin_manager.unregister(plugin=plugin, name=name)
-        blocked_plugins.append(plugin)
-
-    with mock.patch(path) as ReporterMock:
-        ReporterMock.return_value = logger
-        yield
-
-    for plugin in blocked_plugins:
-        allure_commons.plugin_manager.register(plugin)
-
-
-class AlluredTestdir(object):
-    def __init__(self, testdir, request):
-        self.testdir = testdir
-        self.request = request
-        self.allure_report = None
-
-    def run_with_allure(self):
-        logger = AllureFileLogger(self.testdir.tmpdir.strpath)
-        with fake_logger("allure_pytest_bdd.plugin.AllureFileLogger", logger):
-            # self.testdir.runpytest("-s", "-v", "--alluredir", self.testdir.tmpdir)
-            self.testdir.runpytest("-s", "-v")
-            # print(a.stdout.lines)
-            # print(a.stderr.lines)
-            self.allure_report = AllureReport()
-
-
+##################################
+# HTML Report - Customization
+###############################
 # This will append an url to the html report
 @pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_makereport(item, call):
@@ -232,42 +183,11 @@ def pytest_runtest_makereport(item, call):
         xfail = hasattr(report, "wasxfail")
         if (report.skipped and xfail) or (report.failed and not xfail):
             # only add additional html on failure
-            extra.append(pytest_html.extras.html("<div>Additional HTML</div>"))
+            extra.append(pytest_html.extras.html("<div>Additional HTML on Failure/Skip</div>"))
         report.extra = extra
 
 
-@pytest.fixture(scope='module')
-def module_scope_fixture_with_finalizer(request):
-    def module_finalizer_fixture():
-        # my_module_scope_step()
-        pass
-    request.addfinalizer(module_finalizer_fixture)
-
-
 def test_extra(extra):
-    extra.append(extras.text("some string MB. Added in conftest"))
-
-'''
-@pytest.fixture
-def allured_testdir(testdir, request):
-    return AlluredTestdir(testdir, request)
-
-
-@pytest.fixture
-def context():
-    return dict()
-
-
-@pytest.fixture
-def allure_report(allured_testdir, context):
-    return allured_testdir.allure_report
-
-
-@given(parsers.re("(?P<name>\\w+)(?P<extension>\\.\\w+) with content:(?:\n)(?P<content>[\\S|\\s]*)"))
-def feature_definition(name, extension, content, testdir):
-    testdir.makefile(extension, **dict([(name, content)]))
-
-@when("run pytest-bdd with allure")
-def run(allured_testdir):
-    allured_testdir.run_with_allure()
-'''
+    extra.append(extras.text("String added in conftest. "
+                             "Will appear in HTML report in the last column as a Link with name 'text'"
+                             "If not overwritten, like in this test."))

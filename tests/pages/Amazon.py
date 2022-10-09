@@ -7,6 +7,7 @@ from functools import reduce
 from operator import getitem
 import time
 
+
 class Amazon:
     def __init__(self, page: Page):
         self.page = page
@@ -76,7 +77,7 @@ class Amazon:
             self.next_button.click()
             print(f"Clicked on next in product search: '{product}'")
             self.product_texts.first.wait_for(timeout=6000)
-        self.deliverable_product_prices.first.wait_for(timeout=6000)
+        self.deliverable_product_prices.last.wait_for(timeout=6000)
         lowest_price = self.return_cheapest_price_from_product_overview()
         print(f"Lowest Price identified: '{lowest_price}'")
         locator_cheapest_product = self.page.locator(
@@ -85,10 +86,12 @@ class Amazon:
         return locator_cheapest_product, lowest_price
 
     def return_cheapest_price_from_product_overview(self):
-        # self.page.wait_for_timeout(1000)
         self.deliverable_product_prices.last.wait_for()
+        self.page.wait_for_timeout(2000)  # Still necessary for last price to load
         price_wholes = self.deliverable_product_prices.all_inner_texts()  # e.g. ['10\n,', '8\n,', '15\n,']
         price_fractions = self.deliverable_product_price_fractions.all_inner_texts()  # e.g. ['99', '49', '33']
+        print(f"Fractions '{price_fractions}'\n "
+              f"whole prices: '{price_wholes}'.")
         price_wholes = [price[:-2] for price in price_wholes]  # cut off the last three unnecessary digits
         final_prices = []
 
@@ -96,8 +99,8 @@ class Amazon:
             try:
                 final_prices.append(price_wholes[index] + "." + item)
             except IndexError as error_msg:
-                print(f"Number of fractions '{len(price_fractions)}' does not match number of whole prices: "
-                      f"'{price_wholes.__len__()}'. Errormsg:{error_msg}")
+                print(f"Number of fractions '{len(price_fractions)}' does not match "
+                      f"Number of whole prices: '{price_wholes.__len__()}'. Continuing anyways. ")
 
         final_prices_float = [float(price) for price in final_prices]
         final_prices_float.sort()
@@ -142,8 +145,7 @@ class Amazon:
     def get_var(self, key):
         return self.testdata[key]
 
-    def basket(self):
-        print(f"IN BASKET: {self.testdata}")
+    def basket(self) -> float:
         return self.testdata["basket"]
 
     def products(self):
@@ -158,13 +160,13 @@ class Amazon:
         self.testdata["basket"]["sum_value"] += float(str(price).replace(",", "."))
 
     def change_nested_json_values(self,
-                                  json_dump: str = "testdata: {node: {key: value}}",
+                                  json_dump: dict = "testdata: {node: {key: value}}",
                                   key_list: list = None,
                                   new_value: str = "") -> str:
         """
         Set item in nested dictionary
 
-        @param json_dump: string in json format that nshould be traversed
+        @param json_dump: string in json format that should be traversed
         @param key_list: list with specified values in json. Determines the path of keys.to the value:
         @param new_value: new value that replaces old value
         :return: New Json with changed value at specified key path
@@ -182,12 +184,10 @@ class Amazon:
 
     def add_price_to_basket_sum(self, price):
         self.testdata["basket"]["sum_value"] += float(str(price).replace(",", "."))
-        print(f"Value: {price} added to basket: {self.testdata['basket']['sum_value']}")
 
     def selector(self, amazon_selector="searchbar"):
         if self.__getattribute__(amazon_selector):
             page_object = self.__getattribute__(amazon_selector)
-            print(f"Page_object:  {page_object}")
             match = re.search(r"selector='(.*)'", page_object.__repr__()).group(1)
         else:
             match = self.page.locator(amazon_selector)

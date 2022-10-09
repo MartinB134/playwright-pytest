@@ -9,7 +9,7 @@ Write end-to-end tests for your web apps with [Playwright](https://github.com/mi
 - Support for **headless and headed** execution.
 - **Built-in fixtures** that provide browser primitives to test functions.
 
-##Installation
+## Installation
 1. Clone Repo
 2. Create Virtual Environment
    - ``python -m venv pytest_venv``
@@ -22,7 +22,7 @@ Write end-to-end tests for your web apps with [Playwright](https://github.com/mi
 5. This environment is configured to run headed, with a slight delay, ignoring the second playwright test
 
 
-##Development
+## Development
 The `pytest-playwright` plugin takes care of browser instantiation automatically with the following fixtures:
 
 * The `browser` fixture provides the browser instance launched by Playwright.
@@ -56,28 +56,54 @@ Check out [Gherkin Reference](https://cucumber.io/docs/gherkin/reference/) to wr
 1 Change the config file to desired number of instances
 ![](tests/assets/pytest.ini-setup nodes.png)
 
-## Examples for test-structures 
+#### Examples for test-structures 
 For more examples visit: https://github.com/cmoir/playwright_pytest_bdd_example
 
 
 ##  How to Configure Pytest
-### Configure using pytest.ini
+### Define commandline arguments
+> use a pytest.ini
 - file is at the root of the folder
-- define the tests, that should be excecuted
-  - 
+- in this project all possible parameters are included, commented and disabled by hashes
+- you can define parameters by default that would be otherwise be passed in the commandline
+Example:
+- Commandline:``pytest -parameter argument``
+- pytest.ini :
+````
+[pytest]
+addopts =  -parameter argument
+````
+- Defining which test should be called:
+````
+[pytest]
+testpaths = my_test_path
+python_files = my_test_file
+python_classes = my_test_class
+python_functions = my_test_function
+markers =  my_marker
+ ````
+- exclude tests:
 
-###Configure using conftest.py
-###Most important
+````
+pytest --ignore-glob '*playwright*' # ignore any file, class etc, that has 'playwright' in it
+````
+
+> You can use * as wildcard in the pytest.ini
+
+For detailed info: [Pytest - commandline options](https://docs.pytest.org/en/7.1.x/example/simple.html)
+
+## Using conftest.py
+###  Scope of confest
 1. You can have multiple configs (conftest.py) in each folder to define their scope
-2. Every definition colliding will override root definition
+2. Every colliding definition  will override the root definition
 
+### Use Cases
 
-###Use Cases
-####Fixtures: 
+#### Fixtures: 
 Define fixtures for static data used by tests. This data can be accessed by all tests in the suite unless specified otherwise. 
 These functions with the @fixture could be data, variables as well as helper functions of modules which will be passed to all tests.
 
-####Hooks
+#### Hooks
 You can specify hooks such as setup and teardown methods and much more to improve your tests. 
 For a set of available hooks, read [Pytests Docu on Hooks](https://docs.pytest.org/en/6.2.x/reference.html#hooks) 
 Example:
@@ -88,18 +114,16 @@ Example:
       print("Print this in every directory")
   ```
 
-####Test root path
-This is a bit of a hidden feature. By defining conftest.py in your root path, 
-you will have pytest recognizing your application modules without specifying PYTHONPATH. 
+#### Test root path
+By defining conftest.py in your root path, you will have pytest recognizing your application modules without specifying PYTHONPATH. 
 In the background, py.test modifies your sys.path by including all submodules which are found from the root path.
 
 
-## Debugging 
-
+## Debugging
 ## Show traces
 ``pytest --full-trace``
 
-##with Inspector
+## Playwright Inspector
 https://playwright.dev/python/docs/debug#playwright-inspector
 
 Start the inspector and go through your test stepwise with:
@@ -117,9 +141,10 @@ Start the inspector and go through your test stepwise with:
    ``pytest --html=myreportname.html``
 > Visit [pytest-html](https://pytest-html.readthedocs.io/en/latest/) for configuration details
 
-###buildin pytest report
+### Video Recording
 1. in the pytest.ini add the option ``--output``
 2. Result will be saved in folder "test-results" if no directory is specified
+3. An example is in "results"
 
 ### Allure
 #### Allure Installation Windows - Powershell
@@ -140,8 +165,9 @@ then ``scoop install find-java``. After you restart the commandline ``allure --v
 ``allure serve /path/to/allure_output_folder``
 
 ### Configure Allure
-The most important feature of allure. It captures your steps and the Gherkin calls and allows for costumization
+Allure records all BDD steps and function calls.
 
+To define a function, that can be used by your tests. This is an example
 ````
 import allure
 
@@ -149,6 +175,11 @@ import allure
 def show_in_report(arg1, arg2):
     assert arg1 == arg2
 ````
+
+To attch more information in the report, visit the [Allure Report Documentation](https://docs.qameta.io/allure-report/#_attachments_5)
+
+#### Example Screenshot
+![Allure Report example](assets/Allure Report-example.jpg)
 
 ### Other options
 [Browserstack - HowTo integrate playwright](https://www.browserstack.com/docs/automate/playwright#Python)
