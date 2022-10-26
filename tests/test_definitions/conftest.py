@@ -18,10 +18,11 @@ import json
 import pytest
 from pytest_html import extras
 from pages.Amazon import Amazon
-from pytest_bdd import parsers, given
+from pages.Investigation import Investigation
+from pytest_bdd import parsers, given, scenarios
 
 TESTDATA_PATH = "tests/assets/testdata.json"
-pytest.Amazon_URL = "https://www.amazon.com"
+pytest.TEST_URL = "http://dev01.inv.com05.lp.rsint.net"
 
 # The testdir fixture which we use to perform unit tests will set the home directory
 # To a temporary directory of the created test. This would result that the browsers will
@@ -44,9 +45,10 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "tests.assets.django.settings")
 ################################################
 pytest.initial_testdata = "Starting point data. Not yet filled."
 
-
+#################################
+#   Fixtures
+#################################
 # Get contents of testdata.json to initial_testdata string
-
 @pytest.fixture()
 def write_testdata_to_current_page_class(amazon):
     file = open(os.path.abspath(TESTDATA_PATH), 'r')
@@ -77,6 +79,11 @@ def write_price_to_products(price="0", product="empty"):
                                                  ["products", product, "product_price"],
                                                  price)
     print(f"Price '{price}' added to product '{product}'")
+
+
+@pytest.fixture
+def investigation(page):
+    return Investigation(page)
 
 
 @pytest.fixture
@@ -119,32 +126,32 @@ def pytest_bdd_after_scenario(request, feature, scenario):
 ########################
 #     Shared steps
 # ######################
-@given(parsers.parse("A browser is opened at page amazon"), target_fixture="page")
-def return_amazon_page(page):
-    page.goto(f"{pytest.Amazon_URL}")
-    return page
+
+# @pytest.fixture
+#
+#     return page
 
 
-@given(parsers.parse("Zipcode is set the US address {zipcode}"))
-def change_zipcode_us(zipcode, amazon=return_amazon_page):
-    # Click locator to change address
-    amazon.page.wait_for_url(f"{pytest.Amazon_URL}*")
-    # Anomaly where the amazon page starts at a different state
-    if amazon.page.locator("a:has-text('Departments')").is_visible():
-        # Reset Page
-        amazon.page.locator("text=Departments").first.click()
-    # Sometimes amazon starts at a different amazon home page
-    if not amazon.page.locator('//*[contains(@id,"nav-pack")]').is_visible():
-        amazon.page.goto(f"{pytest.Amazon_URL}")
-    amazon.page.locator('//*[contains(@id,"nav-pack")]').click()
-    amazon.page.locator("[aria-label=\"oder geben Sie eine US-Postleitzahl an\"]").click()
-    # Fill [aria-label="oder geben Sie eine US-Postleitzahl an"]
-    amazon.page.locator("[aria-label=\"oder geben Sie eine US-Postleitzahl an\"]").fill(zipcode)
-    amazon.page.wait_for_timeout(100)
-    # Click confirm button
-    amazon.page.locator("div[id='GLUXSpecifyLocationDiv'] .a-button-input").click()
-    # Click second confirm button
-    amazon.page.locator(".a-popover-footer input").click()
+#@given(parsers.parse("Zipcode is set the US address {zipcode}"))
+#def change_zipcode_us(zipcode, amazon=return_test_page):
+#    # Click locator to change address
+#    amazon.page.wait_for_url(f"{pytest.TEST_URL}*")
+#    # Anomaly where the amazon page starts at a different state
+#    if amazon.page.locator("a:has-text('Departments')").is_visible():
+#        # Reset Page
+#        amazon.page.locator("text=Departments").first.click()
+#    # Sometimes amazon starts at a different amazon home page
+#    if not amazon.page.locator('//*[contains(@id,"nav-pack")]').is_visible():
+#        amazon.page.goto(f"{pytest.TEST_URL}")
+#    amazon.page.locator('//*[contains(@id,"nav-pack")]').click()
+#    amazon.page.locator("[aria-label=\"oder geben Sie eine US-Postleitzahl an\"]").click()
+#    # Fill [aria-label="oder geben Sie eine US-Postleitzahl an"]
+#    amazon.page.locator("[aria-label=\"oder geben Sie eine US-Postleitzahl an\"]").fill(zipcode)
+#    amazon.page.wait_for_timeout(100)
+#    # Click confirm button
+#    amazon.page.locator("div[id='GLUXSpecifyLocationDiv'] .a-button-input").click()
+#    # Click second confirm button
+#    amazon.page.locator(".a-popover-footer input").click()
 
 
 ####################
@@ -179,7 +186,7 @@ def pytest_runtest_makereport(item, call):
     extra = getattr(report, "extra", [])
     if report.when == "call":
         # always add url to report
-        extra.append(pytest_html.extras.url(pytest.Amazon_URL))
+        extra.append(pytest_html.extras.url(pytest.TEST_URL))
         xfail = hasattr(report, "wasxfail")
         if (report.skipped and xfail) or (report.failed and not xfail):
             # only add additional html on failure

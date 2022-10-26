@@ -98,7 +98,6 @@ For detailed info: [Pytest - commandline options](https://docs.pytest.org/en/7.1
 2. Every colliding definition  will override the root definition
 
 ### Use Cases
-
 #### Fixtures: 
 Define fixtures for static data used by tests. This data can be accessed by all tests in the suite unless specified otherwise. 
 These functions with the @fixture could be data, variables as well as helper functions of modules which will be passed to all tests.
