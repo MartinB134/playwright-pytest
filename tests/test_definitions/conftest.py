@@ -16,8 +16,8 @@ import sys
 import os
 import json
 import pytest
+from py.xml import html
 from pytest_html import extras
-from pages.Amazon import Amazon
 from pages.Investigation import Investigation
 from pytest_bdd import parsers, given, scenarios
 
@@ -127,31 +127,6 @@ def pytest_bdd_after_scenario(request, feature, scenario):
 #     Shared steps
 # ######################
 
-# @pytest.fixture
-#
-#     return page
-
-
-#@given(parsers.parse("Zipcode is set the US address {zipcode}"))
-#def change_zipcode_us(zipcode, amazon=return_test_page):
-#    # Click locator to change address
-#    amazon.page.wait_for_url(f"{pytest.TEST_URL}*")
-#    # Anomaly where the amazon page starts at a different state
-#    if amazon.page.locator("a:has-text('Departments')").is_visible():
-#        # Reset Page
-#        amazon.page.locator("text=Departments").first.click()
-#    # Sometimes amazon starts at a different amazon home page
-#    if not amazon.page.locator('//*[contains(@id,"nav-pack")]').is_visible():
-#        amazon.page.goto(f"{pytest.TEST_URL}")
-#    amazon.page.locator('//*[contains(@id,"nav-pack")]').click()
-#    amazon.page.locator("[aria-label=\"oder geben Sie eine US-Postleitzahl an\"]").click()
-#    # Fill [aria-label="oder geben Sie eine US-Postleitzahl an"]
-#    amazon.page.locator("[aria-label=\"oder geben Sie eine US-Postleitzahl an\"]").fill(zipcode)
-#    amazon.page.wait_for_timeout(100)
-#    # Click confirm button
-#    amazon.page.locator("div[id='GLUXSpecifyLocationDiv'] .a-button-input").click()
-#    # Click second confirm button
-#    amazon.page.locator(".a-popover-footer input").click()
 
 
 ####################
@@ -161,11 +136,11 @@ class Helpers:
     """
     Functions that are  globally accessible with "helpers." notation
     """
-    def write_testdata_to_current_page_class(amazon):
+    def write_testdata_to_current_page_class(investigation):
         file = open(os.path.abspath(TESTDATA_PATH), 'r')
         testdata_json = json.loads(file.read())
         pytest.initial_testdata = testdata_json
-        amazon.testdata = testdata_json
+        investigation.testdata = testdata_json
 
 
 ''' Replace every warning message you want to override
@@ -191,8 +166,12 @@ def pytest_runtest_makereport(item, call):
         if (report.skipped and xfail) or (report.failed and not xfail):
             # only add additional html on failure
             extra.append(pytest_html.extras.html("<div>Additional HTML on Failure/Skip</div>"))
-        report.extra = extra
 
+        extra.append(extras.text("String added in conftest. "
+                                 "Will appear in HTML report in the last column as a Link with name 'text'"))
+        report.extra = extra
+def pytest_html_results_summary(prefix, summary, postfix):
+    prefix.extend([html.p("foo: bar here")])
 
 def test_extra(extra):
     extra.append(extras.text("String added in conftest. "

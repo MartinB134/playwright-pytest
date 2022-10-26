@@ -1,11 +1,10 @@
-###### Szenario Amazon
-import allure
+###### Szenario investigation
 import pytest
+from py.xml import html # html report for debugging
 from pytest_bdd import given, when, then, parsers, scenario, scenarios
 
-from pytest_html import extras
 
-pytest.TEST_URL = "http://dev00.inv.com05.lp.rsint.net"
+#pytest.TEST_URL = "http://dev00.inv.com05.lp.rsint.net"
 
 # Call other tests like this:
 scenarios('test_Kommunikationsdetails_gdm_for_identities.feature')
@@ -24,105 +23,73 @@ def check_fields(investigation, helpers):
     # page = return_test_page
     # Go to http://eqa02.inv.com05.lp.rsint.net/#/investigation/
     #page.goto("http://dev05.inv.com05.lp.rsint.net/#/investigation/")
-    # input username
-    investigation.page.locator("input[id=\"username\"]").click()
-    # Fill input[name="username"]
-    investigation.page.locator("input[id=\"username\"]").fill("investigator")
-    # Click input[name="password"]
-    investigation.page.locator("input[name=\"password\"]").click()
-    # Fill input[name="password"]
-    investigation.page.locator("input[name=\"password\"]").fill("investigator")
-    # Click input:has-text("Sign In")
-    investigation.page.locator("input:has-text(\"Sign In\")").click()
-    investigation.page.wait_for_url("*.inv.com05.lp.rsint.net*")
-    # Click text=TestProceeding1 (AZ-JS20190822) 15 >> button
-    investigation.page.locator(".cell-content section:has-text('TestMeasure')  >> //ancestor::section >> "
-                               "//rs-status-icon//i[contains(@class, 'mail')] >> nth=1").click()
-    # Click div:nth-child(2) > div:nth-child(4) > rs-data-table-cell > .cell-content
-    with investigation.page.expect_popup() as popup_info:
-        investigation.page.locator("div:nth-child(2) > div:nth-child(4) > rs-data-table-cell > .cell-content").click()
-    page1 = popup_info.value
-    # Click text=Metadaten
-    page1.locator("text=Metadaten").click()
-    page1.locator("div:nth-child(7) > div:nth-child(3) > rs-data-table-cell > .cell-content").first.click()
-    page1 = popup_info.value
-    # Click section:has-text("Identitäten") >> nth=2
-    page1.locator("section:has-text(\"Identitäten\")").nth(2).click()
-    # Click text=Kennung
-    page1.locator("text=Kennung").click()
-    # Click text=Anschlussinhaber
-    page1.locator("text=Anschlussinhaber").click()
-    # Click text=Hauptsprecher
-    page1.locator("text=Hauptsprecher").click()
-    # Click text=IMSI
-    page1.locator("text=IMSI").click()
-    # Click text=IMEI
-    page1.locator("text=IMEI").click()
+    investigation.login_at_url(url=pytest.TEST_URL)
+    page = investigation.page
+    # Click  text=TestProceeding1 toggle button for events
+    investigation.page.locator("mat-expansion-panel-header[role='button']:has-text('TestProceeding1') >> //ancestor::rs-area  >> rs-toggle-button").first.click()
+    # Click eventtable first row that contains the mail class icon
+    # Click rs-date-range-select div:has-text("Von") >> nth=3
+    page.locator("text=VonBis >> #mat-input-0").fill("")
+    # Press Enter
+    page.locator("text=VonBis >> #mat-input-0").press("Enter")
 
-    # Click mat-select[role="combobox"] >> text=Schnellfilter
-    investigation.page1.locator("mat-select[role=\"combobox\"] >> text=Schnellfilter").click()
+    # Click div:nth-child(2) > div:nth-child(4) > rs-data-table-cell > .cell-content
+    # Click .cell-content > .ng-star-inserted > .rs-tooltip-trigger > section >> nth=0
+    with page.expect_popup() as popup_info:
+        investigation.page.locator(".cell-content section:has-text('TestMeasure')  >> //ancestor::section >> //rs-status-icon//i[contains(@class, 'mail')] >> nth=1").click()
+
+    page2 = popup_info.value
+
+    #with investigation.page.expect_popup() as popup_info:
+    #   investigation.page.locator("div:nth-child(2) > div:nth-child(4) > rs-data-table-cell > .cell-content").click()
+    page2 = popup_info.value
+    # Click text=Metadaten
+    page2.locator("text=Metadaten").click()
+
+    # Click section:has-text("Identitäten") >> nth=2
+    page2.locator("section:has-text(\"Identitäten\")").nth(2).click()
+    # Click text=Kennung
+    page2.locator("text=Kennung").click()
+    # Click text=Anschlussinhaber
+    # page2.locator("text=Anschlussinhaber").click()
+    # Click text=Hauptsprecher
+    # page2.locator("text=Hauptsprecher").click()
+    # Click text=IMSI
+    #  page2.locator("text=IMSI").click()
+    # Click text=IMEI
+    # page2.locator("text=IMEI").click()
+
     # Click span:has-text("EventProduct")
-    event_product = investigation.page1.locator("span:has-text(\"EventProduct\")").first().getText()
+    event_product = page2.locator("rs-attribute[label='Status']").first.inner_text()
+                                  #">> div[data-e2e-id='attribute-value']").first.inner_text()
     print(f"Event product: {event_product}")
     # Click text=Inhalt
-    investigation.page1.locator("text=Inhalt").click()
-    # Close investigation.page
-    investigation.page1.close()
+    assert event_product == "-"
+    page2.locator("text=Inhalt").click()
     # Click .cell-content >> nth=0
-    with investigation.page.expect_popup() as popup_info:
-        investigation.page.locator(".cell-content").first.click()
-    investigation.page2 = popup_info.value
+
     # Click text=Kennung
-    investigation.page2.locator("text=Kennung").click()
+    page2.locator("text=Kennung").click()
     # Click text=Tatsächlicher Teilnehmer
-    investigation.page2.locator("text=Tatsächlicher Teilnehmer").click()
+    page2.locator("text=Tatsächlicher Teilnehmer").click()
     # Click th[role="columnheader"]:has-text("IP")
-    investigation.page2.locator("th[role=\"columnheader\"]:has-text(\"IP\")").click()
+    page2.locator("th[role=\"columnheader\"]:has-text(\"IP\")").click()
     # Click text=Provider
-    investigation.page2.locator("text=Provider").click()
+    page2.locator("text=Provider").click()
     # Click text=Ungefährer Standort
-    investigation.page2.locator("text=Ungefährer Standort").click()
-    # Close investigation.page
-    investigation.page2.close()
+    page2.locator("text=Ungefährer Standort").click()
+    # Close page
+    page2.close()
     # ---------------------
 
-    investigation.page.wait_for_url(f"{pytest.Amazon_URL}*")
-    # amazon.investigation.page.click(searchbar)
-    # Search for specific product
-    #investigation.page.fill(searchbar, str(product))
-    # Press Enter and wait investigation.page to load completely
-    #investigation.page.locator(searchbar).press("Enter")
-    #investigation.page.wait_for_url(f"{pytest.Amazon_URL}/s?k=*{product}*")
-    # amazon.sort_for_product_price_asc(product)
+    #pytest.hookimpl(hookwrapper=True)
+    #def pytest_runtest_makereport(item, call):
+    #    '''data from the output of pytest gets processed here
+    #     and are passed to pytest_html_results_table_row'''
+    #    outcome = yield
+    #    # this is the output that is seen end of test case
+    #    report = outcome.get_result()
+    #    # taking doc string of the string
+    #    column = "New Column"
 
-
-@when(parsers.parse('all products are added to the basket'))
-def check_mini_basket(page, amazon):
-    minibasket_price = amazon.investigation.page.locator("//*[contains(@class, 'subtotal-value')]").inner_text()
-    products = amazon.products
-    basket = amazon.basket()
-    print(f"Basket: {basket} \n "
-          f"Minibasket_price: {minibasket_price}")
-
-
-@then(parsers.parse('Products are displayed with added sums in basket'), target_fixture='product_price')
-def check_sum_in_basket(page, amazon, extra):
-    amazon.cart_toggle.click()
-    # Get added up value from the generated testrun and round it like amazon does
-    added_products_sum = str("%.2f" % round(amazon.basket()['sum_value'], 2))
-    print(f"Basket final: {added_products_sum}")
-    amazon.basket_total.wait_for()
-    # Attach Screenshot of final basket in allure report
-    allure.attach(amazon.page.locator(selector='div', has_text="Shopping Cart").first.screenshot())
-    extra.append(extras.text("In function. Check_sum_in_basket"))
-    displayed_sum = amazon.basket_total.text_content()[1:]  # Cut the currency in front of the value and return the text
-    #show_in_report(added_products_sum, displayed_sum)
-    assert added_products_sum == displayed_sum
-
-
-@then("Going to checkout leads to login")
-def step_impl(amazon):
-    amazon.checkout_basket.click()
-    amazon.page.wait_for_url(f"{pytest.Amazon_URL}*")
-    assert amazon.page.locator("h1 >> text=Sign in").is_visible()
 
