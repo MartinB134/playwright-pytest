@@ -7,9 +7,10 @@ import time
 
 
 class Investigation:
-    def __init__(self, page: Page):
-        self.page = page
-        self.testdata = {}  # Permanent Storage in testdata.json will be filled in confest
+    def __init__(self, page: Page,  popup: Page = "optional"):
+        self.page = page  # Current instance of the page
+        self.popup = popup
+        self.testdata = {}  # Permanent Storage in testdata.json will be filled in conftest (as needed per page)
         self.searchbar = self.page.locator(".nav-search-field input")
 
     def verify_header(self):

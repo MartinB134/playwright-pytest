@@ -22,7 +22,7 @@ from pages.Investigation import Investigation
 from pytest_bdd import parsers, given, scenarios
 
 TESTDATA_PATH = "tests/assets/testdata.json"
-pytest.TEST_URL = "http://dev01.inv.com05.lp.rsint.net"
+pytest.TEST_URL = "http://dev03.inv.com05.lp.rsint.net"
 
 # The testdir fixture which we use to perform unit tests will set the home directory
 # To a temporary directory of the created test. This would result that the browsers will
@@ -50,11 +50,11 @@ pytest.initial_testdata = "Starting point data. Not yet filled."
 #################################
 # Get contents of testdata.json to initial_testdata string
 @pytest.fixture()
-def write_testdata_to_current_page_class(amazon):
+def write_testdata_to_current_page_class(investigation):
     file = open(os.path.abspath(TESTDATA_PATH), 'r')
     testdata_json = json.loads(file.read())
     pytest.initial_testdata = testdata_json
-    amazon.testdata = testdata_json
+    investigation.testdata = testdata_json
 
 
 @pytest.fixture()
@@ -87,8 +87,8 @@ def investigation(page):
 
 
 @pytest.fixture
-def amazon(page):
-    return Amazon(page)
+def investigation_popup(investigation):
+    return investigation.popup
 
 
 @pytest.fixture
@@ -113,9 +113,9 @@ def pytest_bdd_after_step(request, step):
 
 
 def pytest_bdd_step_error(step, step_func, exception):
-    print(f"=============== Custom Failure Report ============================/\n"
-          f"Step: '{step.name}' failed in function: '{step_func}'\n"
-          f"Exception: '{exception}'")
+    print(f"=============== Failure Report ============================\n/\n")
+    print(f"Step: '{step.name}' failed in function: '{step_func}'\n")
+    print(f"Exception: '{exception}'")
 
 
 def pytest_bdd_after_scenario(request, feature, scenario):
@@ -170,8 +170,12 @@ def pytest_runtest_makereport(item, call):
         extra.append(extras.text("String added in conftest. "
                                  "Will appear in HTML report in the last column as a Link with name 'text'"))
         report.extra = extra
+
 def pytest_html_results_summary(prefix, summary, postfix):
     prefix.extend([html.p("foo: bar here")])
+    summary.extend([html.p("summary here")])
+    postfix.extend([html.p("postfix here")])
+
 
 def test_extra(extra):
     extra.append(extras.text("String added in conftest. "

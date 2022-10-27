@@ -2,22 +2,26 @@
 import allure
 import pytest
 from playwright.sync_api import expect
-from py.xml import html # html report for debugging
+from playwright.sync_api import Page as page
+from py.xml import html  # html report for debugging
 from pytest_bdd import given, when, then, parsers, scenario, scenarios
 
 
 #pytest.TEST_URL = "http://dev00.inv.com05.lp.rsint.net"
 
 # Call other tests like this:
-scenarios('test_Kommunikationsdetails_gdm_for_identities.feature')
+scenarios('test_Kommunikationsdetails_gdm_for_identities_outline.feature')
 
-@scenario('test_Kommunikationsdetails_gdm_for_identities.feature', 'Check Identities GDM for Phone Calls')
+
+@scenario('test_Kommunikationsdetails_gdm_for_identities_outline.feature', 'Check Identities GDM for multiple Event Types')
 def run_scenario():
     pass  # insert last assertion here
 
-@given(parsers.parse("I opened a DdeA for a phone call communication event"), target_fixture="page")
+
+@given(parsers.parse("I opened a DdeA for a <communication_event>"), target_fixture="communication_event")
 def navigate_to_url(investigation, helpers):
     helpers.write_testdata_to_current_page_class(investigation)
+    print(f"Communication event")
     investigation.page.goto(f"{pytest.TEST_URL}")
 
 
@@ -44,26 +48,28 @@ def check_fields(investigation):
     print(f"Event product: {event_product}")
     assert event_product == "-"
 
+    # Click text=Kennung
+    popup.locator("text=Kennung").click()
+    # Click text=Tatsächlicher Teilnehmer
+    popup.locator("text=Tatsächlicher Teilnehmer").click()
     # Click th[role="columnheader"]:has-text("IP")
-    popup.locator("th[role=\"columnheader\"]:has-text(\"IP\")").click()
-    # Click text=Provider
-    popup.locator("text=Provider").click()
-    # Click text=Ungefährer Standort
-    labels = [#"Start",  # nicht vorhanden
-              #"Ende",   # nicht vorhanden
-              #"Dauer",  # nicht vorhanden
-              #"Funkzellenstandort",  # nicht vorhanden
+    popup.locator("th[role=\"columnheader\"]:has-text(\"IP\")")
+
+    labels = ["Start",
+              "Ende",
+              "Dauer",
+              #"Funkzellenstandort",
               "Richtung",
               "Verbindungsstatus",
-              #"Leistungsmerkmal",  # nicht vorhanden
-              #"Weiterleitungsziel",  # nicht vorhanden
+              "Leistungsmerkmal",  # nicht vorhanden
+              "Weiterleitungsziel",  # nicht vorhanden
               "Übertragungstechnik",
-              #"IMSI",  # nicht vorhanden
-              #"IMEI",  # nicht vorhanden
-              #"Gerät",  # nicht vorhanden
-              #"Anrufer",  # nicht vorhanden
-              #"Zeitstempel",  # nicht vorhanden
-              #"Angerufener"  # nicht vorhanden
+              "IMSI",  # nicht vorhanden
+              "IMEI",  # nicht vorhanden
+              "Gerät",  # nicht vorhanden
+              "Anrufer",  # nicht vorhanden
+              "Zeitstempel",  # nicht vorhanden
+              "Angerufener"  # nicht vorhanden
               ]
     for label in labels:
         try:
@@ -81,3 +87,7 @@ def check_fields(investigation):
 def check_fields(investigation, investigation_popup, helpers):
     investigation_popup.locator("text=Kommunikationsdetails").screenshot()
     # allure.attach(investigation_popup.locator(selector='div', has_text="Identitäten").first.screenshot())
+
+
+
+

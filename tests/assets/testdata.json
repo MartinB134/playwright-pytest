@@ -1,13 +1,38 @@
 {
-  "products": {
-    "Snickers": {
-      "product_price": 0.0
-    },
-    "Skittles": {
-      "product_price": 0.0
-    }
+  "gdm": {
+  "gdm_phone_call": {
+    "Start": "hh:mm:ss",
+    "Ende": "hh:mm:ss",
+    "Dauer": "hh:mm:ss",
+    "Funkzellenstandort":  "location",
+    "Richtung":  "String",
+    "Verbindungsstatus":  "String",
+    "Leistungsmerkmal":  "String",
+    "Weiterleitungsziel":  "String",
+    "Übertragungstechnik":  "String",
+    "IMSI": "mapping",
+    "IMEI": "mapping",
+    "Gerät":  "String",
+    "Anrufer":  "String",
+    "Zeitstempel":  "hh:mm:ss",
+    "Angerufener": "String"
   },
-  "basket": {
-    "sum_value": 0.0
+  "gdm_sms": {
+    "Start": "hh:mm:ss",
+    "Ende": "hh:mm:ss",
+    "Dauer": "hh:mm:ss",
+    "Funkzellenstandort": "location",
+    "Richtung": "String",
+    "Verbindungsstatus": "String",
+    "Leistungsmerkmal": "String",
+    "Weiterleitungsziel": "String",
+    "Übertragungstechnik": "String",
+    "IMSI": "mapping",
+    "IMEI": "mapping",
+    "Gerät": "String",
+    "Anrufer": "String",
+    "Zeitstempel": "hh:mm:ss",
+    "Angerufener": "String"
   }
+}
 }
