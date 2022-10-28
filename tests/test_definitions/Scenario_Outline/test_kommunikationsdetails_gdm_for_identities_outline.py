@@ -5,6 +5,10 @@ from playwright.sync_api import expect
 from playwright.sync_api import Page as page
 from py.xml import html  # html report for debugging
 from pytest_bdd import given, when, then, parsers, scenario, scenarios
+EXTRA_TYPES = {
+    'Number': int,
+    'String': str
+}
 
 
 #pytest.TEST_URL = "http://dev00.inv.com05.lp.rsint.net"
@@ -18,15 +22,16 @@ def run_scenario():
     pass  # insert last assertion here
 
 
-@given(parsers.parse("I opened a DdeA for a <communication_event>"), target_fixture="communication_event")
-def navigate_to_url(investigation, helpers):
-    helpers.write_testdata_to_current_page_class(investigation)
+@given(parsers.parse("I opened a DdeA for a {communication_event}"), target_fixture="page")
+def return_page(investigation, communication_event):
     print(f"Communication event")
     investigation.page.goto(f"{pytest.TEST_URL}")
+    return investigation.page
 
 
-@then(parsers.parse('the following attributes out of the GDM are added / adjusted to the widget'))
-def check_fields(investigation):
+@then(parsers.parse('the following {attributes} out of the GDM are added / adjusted to the widget'))
+def check_fields(investigation, helpers):
+    helpers.write_testdata_to_current_page_class(investigation)
     investigation.login_at_url(url=pytest.TEST_URL)
     # Click  text=TestProceeding1 toggle button for events
     investigation.page.locator("mat-expansion-panel-header[role='button']:has-text('TestProceeding1') >> //ancestor::rs-area  >> rs-toggle-button").first.click()
@@ -48,37 +53,35 @@ def check_fields(investigation):
     print(f"Event product: {event_product}")
     assert event_product == "-"
 
-    # Click text=Kennung
-    popup.locator("text=Kennung").click()
-    # Click text=Tatsächlicher Teilnehmer
-    popup.locator("text=Tatsächlicher Teilnehmer").click()
     # Click th[role="columnheader"]:has-text("IP")
-    popup.locator("th[role=\"columnheader\"]:has-text(\"IP\")")
-
-    labels = ["Start",
+    # popup.locator("th[role=\"columnheader\"]:has-text(\"IP\")")
+    # Todo: Label Liste mit Json ersetzen
+    labels = [
+              "Start",
               "Ende",
               "Dauer",
-              #"Funkzellenstandort",
+              "Funkzellenstandort",
               "Richtung",
               "Verbindungsstatus",
-              "Leistungsmerkmal",  # nicht vorhanden
-              "Weiterleitungsziel",  # nicht vorhanden
+              "Leistungsmerkmal",
+              "Weiterleitungsziel",
               "Übertragungstechnik",
-              "IMSI",  # nicht vorhanden
-              "IMEI",  # nicht vorhanden
-              "Gerät",  # nicht vorhanden
-              "Anrufer",  # nicht vorhanden
-              "Zeitstempel",  # nicht vorhanden
-              "Angerufener"  # nicht vorhanden
+              "IMSI",
+              "IMEI",
+              "Gerät",
+              "Anrufer",
+              "Zeitstempel",
+              "Angerufener"
               ]
     for label in labels:
+        expected_locator = "unassigned"
         try:
             # locator = f"rs-attribute[label='{label}']"
             locator = f"rs-attribute[label='{label}']"
-            var = str(expect(investigation.popup.locator(locator).first).to_be_visible())
-            print(f"Label {locator} status visibility: '{var}'")
-        except AssertionError:
-            print(f"Label: {label} was not valid with {var}")
+            expected_locator = str(expect(investigation.popup.locator(locator).first).to_be_visible())
+            print(f"Label {locator} status visibility: '{expected_locator}'")
+        except AttributeError:
+            print(f"Label: {label} was not valid with {expected_locator}")
     # Make popup Object available for other tests
     investigation.popup = popup
 

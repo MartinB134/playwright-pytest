@@ -49,29 +49,30 @@ def check_fields(investigation):
     # Click text=Provider
     popup.locator("text=Provider").click()
     # Click text=Ungefährer Standort
-    labels = [#"Start",  # nicht vorhanden
-              #"Ende",   # nicht vorhanden
-              #"Dauer",  # nicht vorhanden
+    labels = ["Start",  # nicht vorhanden
+              "Ende",   # nicht vorhanden
+              "Dauer",  # nicht vorhanden
               #"Funkzellenstandort",  # nicht vorhanden
               "Richtung",
               "Verbindungsstatus",
-              #"Leistungsmerkmal",  # nicht vorhanden
-              #"Weiterleitungsziel",  # nicht vorhanden
+              "Leistungsmerkmal",  # nicht vorhanden
+              "Weiterleitungsziel",  # nicht vorhanden
               "Übertragungstechnik",
-              #"IMSI",  # nicht vorhanden
-              #"IMEI",  # nicht vorhanden
-              #"Gerät",  # nicht vorhanden
-              #"Anrufer",  # nicht vorhanden
-              #"Zeitstempel",  # nicht vorhanden
-              #"Angerufener"  # nicht vorhanden
+              "IMSI",  # nicht vorhanden
+              "IMEI",  # nicht vorhanden
+              "Gerät",  # nicht vorhanden
+              "Anrufer",  # nicht vorhanden
+              "Zeitstempel",  # nicht vorhanden
+              "Angerufener"  # nicht vorhanden
               ]
     for label in labels:
         try:
             # locator = f"rs-attribute[label='{label}']"
             locator = f"rs-attribute[label='{label}']"
+            print(f"Popup: {investigation.popup}")
             var = str(expect(investigation.popup.locator(locator).first).to_be_visible())
             print(f"Label {locator} status visibility: '{var}'")
-        except AssertionError:
+        except AttributeError:
             print(f"Label: {label} was not valid with {var}")
     # Make popup Object available for other tests
     investigation.popup = popup

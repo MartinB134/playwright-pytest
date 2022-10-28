@@ -58,6 +58,17 @@ def write_testdata_to_current_page_class(investigation):
 
 
 @pytest.fixture()
+def login_at_url(investigation, username: str = "investigator",
+                 password: str = "investigator",
+                 url: str = "comvidence"):
+    investigation.page.locator("input[id=\"username\"]").fill(username)
+    investigation.page.locator("input[name=\"password\"]").fill(password)
+    investigation.page.locator("input:has-text(\"Sign In\")").click()
+    investigation.page.wait_for_url(f"*{url}*")
+    return investigation.page
+
+
+@pytest.fixture()
 def read_database():
     file = open(os.path.abspath(TESTDATA_PATH), 'r')
     testdata = json.loads(file.read())

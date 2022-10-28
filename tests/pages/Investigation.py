@@ -19,14 +19,9 @@ class Investigation:
     def login_at_url(self, username: str = "investigator",
                      password: str = "investigator",
                      url: str = "not set"):
-        # input username
-        # Fill input[name="password"]  ${username}
         self.page.locator("input[id=\"username\"]").fill(username)
-        # Fill  input[name="password"]  ${username}
         self.page.locator("input[name=\"password\"]").fill(password)
-        # Click input:has-text("Sign In")
         self.page.locator("input:has-text(\"Sign In\")").click()
-        # Make sure page is loaded
         self.page.wait_for_url(f"*{url}*")
 
     def change_nested_json_values(self,
