@@ -3,5 +3,6 @@ run_test:
   before_script:
     - apt-get update
     - pip install -r requirements.txt
+    - playwright install
   script:
     - pytest
