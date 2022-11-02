@@ -16,6 +16,7 @@ import sys
 import os
 import json
 import pytest
+from playwright.sync_api import Page
 from py.xml import html
 from pytest_html import extras
 from pages.Investigation import Investigation
@@ -57,15 +58,26 @@ def write_testdata_to_current_page_class(investigation):
     investigation.testdata = testdata_json
 
 
+@pytest.fixture
+def investigation(page):
+    return Investigation(page)
+
+
 @pytest.fixture()
-def login_at_url(investigation, username: str = "investigator",
-                 password: str = "investigator",
-                 url: str = "comvidence"):
-    investigation.page.locator("input[id=\"username\"]").fill(username)
-    investigation.page.locator("input[name=\"password\"]").fill(password)
-    investigation.page.locator("input:has-text(\"Sign In\")").click()
-    investigation.page.wait_for_url(f"*{url}*")
-    return investigation.page
+def global_functions():
+    def login_at_url(investigation: Page,
+                     username: str = "investigator",
+                     password: str = "investigator",
+                     url: str = pytest.TEST_URL):
+        investigation.page.locator("input[id=\"username\"]").fill(username)
+        investigation.page.locator("input[name=\"password\"]").fill(password)
+        investigation.page.locator("input:has-text(\"Sign In\")").click()
+        investigation.page.wait_for_url(f"*{url}*")
+        return investigation
+
+    def second_func(parameter):
+        print(f"Param {parameter}")
+        return parameter
 
 
 @pytest.fixture()
@@ -93,13 +105,8 @@ def write_price_to_products(price="0", product="empty"):
 
 
 @pytest.fixture
-def investigation(page):
-    return Investigation(page)
-
-
-@pytest.fixture
-def investigation_popup(investigation):
-    return investigation.popup
+def investigation_popup(investigation_page):
+    return investigation_page.popup
 
 
 @pytest.fixture
@@ -137,8 +144,6 @@ def pytest_bdd_after_scenario(request, feature, scenario):
 ########################
 #     Shared steps
 # ######################
-
-
 
 ####################
 # Helper functions

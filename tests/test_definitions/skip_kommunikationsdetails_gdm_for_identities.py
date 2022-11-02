@@ -22,7 +22,8 @@ def navigate_to_url(investigation, helpers):
 
 
 @then(parsers.parse('the following attributes out of the GDM are added / adjusted to the widget'))
-def check_fields(investigation):
+def check_fields(investigation, login_at_url):
+    # login_at_url(page=investigation, url=pytest.TEST_URL)
     investigation.login_at_url(url=pytest.TEST_URL)
     # Click  text=TestProceeding1 toggle button for events
     investigation.page.locator("mat-expansion-panel-header[role='button']:has-text('TestProceeding1') >> //ancestor::rs-area  >> rs-toggle-button").first.click()

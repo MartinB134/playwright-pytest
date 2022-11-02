@@ -24,15 +24,18 @@ def run_scenario():
 
 @given(parsers.parse("I opened a DdeA for a {communication_event}"), target_fixture="page")
 def return_page(investigation, communication_event):
-    print(f"Communication event")
+    print(f"Communication event {communication_event}")
     investigation.page.goto(f"{pytest.TEST_URL}")
     return investigation.page
 
 
 @then(parsers.parse('the following {attributes} out of the GDM are added / adjusted to the widget'))
-def check_fields(investigation, helpers):
+def check_fields(investigation, helpers, GlobalFunctions):
+#def check_fields(investigation, helpers, login_at_url):
     helpers.write_testdata_to_current_page_class(investigation)
-    investigation.login_at_url(url=pytest.TEST_URL)
+    # investigation.login_at_url(url=pytest.TEST_URL)
+    global_functions.login_at_url(investigation=investigation.page, url=pytest.TEST_URL)
+    # investigation.login_at_url(url=pytest.TEST_URL)
     # Click  text=TestProceeding1 toggle button for events
     investigation.page.locator("mat-expansion-panel-header[role='button']:has-text('TestProceeding1') >> //ancestor::rs-area  >> rs-toggle-button").first.click()
     # Click eventtable first row that contains the mail class icon
