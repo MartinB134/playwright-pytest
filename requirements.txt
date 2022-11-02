@@ -11,7 +11,7 @@ colorama==0.4.5
 commonmark==0.9.1
 coverage==6.4.4
 distlib==0.3.6
-Django==3.2.15
+#Django==3.2.15
 docutils==0.19
 execnet==1.9.0
 filelock==3.8.0
