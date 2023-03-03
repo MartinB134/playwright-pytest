@@ -13,7 +13,8 @@ Write end-to-end tests for your web apps with [Playwright](https://github.com/mi
 1. Clone Repo
 2. Create Virtual Environment
    - ``python -m venv pytest_venv``
-   ``.\pytest_venv\Scripts\activate``
+      - Windows:``.\pytest_venv\Scripts\activate``
+      - Linux: ``source pytest_venv\Scripts\activate``
 3. Install all dependencies for execution
    - ``pip install -r requirements.txt``
 4. ``playwright install`` (to initialize the playwright browser setup)
