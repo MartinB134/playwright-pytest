@@ -26,8 +26,8 @@ class Amazon:
         self.product_texts = self.page.locator(
             "(//*[contains(@aria-label, '')])[1]//ancestor::*[@data-asin]//h2")
         self.deliverable_product_prices = self.page.locator(
-            "//*[contains(@aria-label, 'Get it')"
-            "or contains(@aria-label, 'delivery')"
+            "//*[contains(@aria-label, 'Get it') "
+            "or contains(@aria-label, 'delivery') "
             "or contains(@aria-label, 'Lieferung')]"
             "//ancestor::*[@data-asin]//*[contains(@class, 'price-whole')]")
         self.deliverable_product_price_fractions = self.page.locator(
@@ -56,6 +56,15 @@ class Amazon:
     #########################################
     #   Combined functions
     #################################
+    def login_at_url(self,
+                     # username: str = "investigator",
+                     # password: str = "investigator",
+                     url: str = "not set"):
+        # self.page.locator("input[id=\"username\"]").fill(username)
+        # self.page.locator("input[name=\"password\"]").fill(password)
+        self.page.locator("input:has-text(\"Sign In\")").click()
+        self.page.wait_for_url(f"*{url}*")
+
     def verify_header(self):
         assert self.page.inner_text('h2') == 'Amazon'
 
@@ -65,10 +74,10 @@ class Amazon:
         self.sort_select_toggle.click()
         # Click selection price Ascending
         self.sort_option_ascending.click()
-        self.page.wait_for_url(f"{pytest.Amazon_URL}/s?k={product}*")
+        self.page.wait_for_url(f"{pytest.EXAMPLE_URL}/s?k={product.replace(' ', '+')}*")
 
-    def choose_best_priced_product_from_results(self, product):
-        self.page.wait_for_url(f"{pytest.Amazon_URL}/s?k={product}*")
+    def choose_best_priced_product_from_results(self, product: str):
+        self.page.wait_for_url(f"{pytest.EXAMPLE_URL}/s?k={product.replace(' ', '+')}*")
         # Wait for the product text and prices to e visible
         self.product_texts.first.wait_for(timeout=6000)
         self.first_deliverable_product_price.wait_for()
@@ -110,7 +119,7 @@ class Amazon:
         return lowest_price
 
     def add_product_to_basket(self, product):
-        self.page.wait_for_url(f"{pytest.Amazon_URL}/*")
+        self.page.wait_for_url(f"*{pytest.EXAMPLE_URL}/*")
 
         if self.add_to_basket_impossible.is_visible():
             product_price = self.product_price_alternative.inner_text()
@@ -131,7 +140,7 @@ class Amazon:
             self.add_price_to_basket_sum(product_price)
             print(f"Added product_price: '{product_price}' to basket")
 
-        self.page.wait_for_url(f"{pytest.Amazon_URL}/*")
+        self.page.wait_for_url(f"*{pytest.EXAMPLE_URL}/*")
         # Click text=Proceed to checkout Zur Kasse gehen Zur Kasse >> input[name="proceedToCheckout"]
         # self.page.locator("input[name=\"proceedToCheckout\"]").click()
         self.checkout_mini_cart.first.wait_for()  # self.checkout_mini_cart_product_prices.first.wait_for()

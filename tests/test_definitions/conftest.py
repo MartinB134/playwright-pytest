@@ -11,19 +11,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import contextlib
 import sys
 import os
 import json
 import pytest
 from playwright.sync_api import Page
+from tests.pages.Amazon import Amazon
 from py.xml import html
 from pytest_html import extras
-from pages.Investigation import Investigation
-from pytest_bdd import parsers, given, scenarios
 
-TESTDATA_PATH = "tests/assets/testdata.json"
-pytest.TEST_URL = "http://dev03.inv.com05.lp.rsint.net"
+TESTDATA_PATH = "../assets/example_datafile.json"
+pytest.EXAMPLE_URL = "https://www.amazon.com"
 
 # The testdir fixture which we use to perform unit tests will set the home directory
 # To a temporary directory of the created test. This would result that the browsers will
@@ -39,7 +38,6 @@ else:
     playwright_browser_path = f"No browser found"
 
 os.environ["PLAYWRIGHT_BROWSERS_PATH"] = playwright_browser_path
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "tests.assets.django.settings")
 
 ###############################################
 # Share data for testing in scope feature
@@ -49,6 +47,8 @@ pytest.initial_testdata = "Starting point data. Not yet filled."
 #################################
 #   Fixtures
 #################################
+
+
 # Get contents of testdata.json to initial_testdata string
 @pytest.fixture()
 def write_testdata_to_current_page_class(investigation):
@@ -57,28 +57,13 @@ def write_testdata_to_current_page_class(investigation):
     pytest.initial_testdata = testdata_json
     investigation.testdata = testdata_json
 
-
+# Initialize a Page Object Model with the current page instance at runtime (The POM methods need the page )
 @pytest.fixture
-def investigation(page):
-    return Investigation(page)
+def amazon(page):
+    return Amazon(page)
 
 
-@pytest.fixture()
-def global_functions():
-    def login_at_url(investigation: Page,
-                     username: str = "investigator",
-                     password: str = "investigator",
-                     url: str = pytest.TEST_URL):
-        investigation.page.locator("input[id=\"username\"]").fill(username)
-        investigation.page.locator("input[name=\"password\"]").fill(password)
-        investigation.page.locator("input:has-text(\"Sign In\")").click()
-        investigation.page.wait_for_url(f"*{url}*")
-        return investigation
-
-    def second_func(parameter):
-        print(f"Param {parameter}")
-        return parameter
-
+# amazon(pytest.EXAMPLE_URL)
 
 @pytest.fixture()
 def read_database():
@@ -127,8 +112,8 @@ def pytest_bdd_before_scenario(request):
 
 
 def pytest_bdd_after_step(request, step):
-    print(f"Calling Step \n '{step}'")
-
+    print(f"Calling Step \n '{step.name}'")
+    print(f"request {request}")
 
 def pytest_bdd_step_error(step, step_func, exception):
     print(f"=============== Failure Report ============================\n/\n")
@@ -137,6 +122,7 @@ def pytest_bdd_step_error(step, step_func, exception):
 
 
 def pytest_bdd_after_scenario(request, feature, scenario):
+
     print(f"Close Page after scenario - to be implemented")
     # Amazon(page).page.close() # needed?
 
@@ -150,13 +136,13 @@ def pytest_bdd_after_scenario(request, feature, scenario):
 ####################
 class Helpers:
     """
-    Functions that are  globally accessible with "helpers." notation
+    Functions that are  globally accessible with "helpers." notation Since
     """
-    def write_testdata_to_current_page_class(investigation):
+    def write_testdata_to_current_page_class(session_page="Not page provided"):
         file = open(os.path.abspath(TESTDATA_PATH), 'r')
         testdata_json = json.loads(file.read())
         pytest.initial_testdata = testdata_json
-        investigation.testdata = testdata_json
+        session_page.testdata = testdata_json
 
 
 ''' Replace every warning message you want to override
@@ -168,7 +154,7 @@ def override_nameerror_warningmessage():
 ##################################
 # HTML Report - Customization
 ###############################
-# This will append an url to the html report
+# This will write the allure report append a text and a html colum with url to the html report
 @pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_makereport(item, call):
     pytest_html = item.config.pluginmanager.getplugin("html")
@@ -177,7 +163,7 @@ def pytest_runtest_makereport(item, call):
     extra = getattr(report, "extra", [])
     if report.when == "call":
         # always add url to report
-        extra.append(pytest_html.extras.url(pytest.TEST_URL))
+        extra.append(pytest_html.extras.url(pytest.EXAMPLE_URL))
         xfail = hasattr(report, "wasxfail")
         if (report.skipped and xfail) or (report.failed and not xfail):
             # only add additional html on failure
@@ -186,6 +172,7 @@ def pytest_runtest_makereport(item, call):
         extra.append(extras.text("String added in conftest. "
                                  "Will appear in HTML report in the last column as a Link with name 'text'"))
         report.extra = extra
+
 
 def pytest_html_results_summary(prefix, summary, postfix):
     prefix.extend([html.p("foo: bar here")])

@@ -55,7 +55,7 @@ Check out [Gherkin Reference](https://cucumber.io/docs/gherkin/reference/) to wr
 
 ## Enable running on multiple instances
 1 Change the config file to desired number of instances
-![](tests/assets/pytest.ini-setup nodes.png)
+![](tests/assets/Allure Report-example.png)
 
 #### Examples for test-structures 
 For more examples visit: https://github.com/cmoir/playwright_pytest_bdd_example

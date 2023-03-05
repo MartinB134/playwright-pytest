@@ -1,0 +1,31 @@
+{
+  "products": {
+  "Suppen Raumspray": {
+    "SomeString1": "hh:mm:ss",
+    "SomeString2": "hh:mm:ss",
+    "SomeString3": "hh:mm:ss",
+    "SomeString4":  "location",
+    "SomeString5":  "String",
+    "SomeString6":  "String",
+    "SomeString0": "mapping",
+    "SomeString11": "mapping",
+    "SomeString12":  "String",
+    "SomeString13":  "String",
+    "Uhrzeit":  "hh:mm:ss"
+  },
+  "Mechanical Keyboard": {
+    "SomeString": "hh:mm:ss",
+    "SomeString": "hh:mm:ss",
+    "SomeString": "hh:mm:ss",
+    "SomeString": "location",
+    "SomeString": "String",
+    "SomeString": "String",
+    "SomeString": "mapping",
+    "SomeString": "mapping",
+    "SomeString": "String",
+    "SomeString": "String",
+    "Uhrzeit": "hh:mm:ss"
+  }
+},
+  "basket": {"sum_value": 0.0}
+}
